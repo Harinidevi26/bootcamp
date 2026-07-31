@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import AddToCartButton from "@/components/AddToCartButton";
 
 interface Product {
   id: string;
@@ -107,16 +108,7 @@ export default async function ProductDetailPage({
             </div>
 
             <div className="mt-8">
-              <button
-                className="
-                  flex w-full items-center justify-center rounded-xl bg-primary px-8 py-4
-                  text-base font-medium text-primary-foreground hover:opacity-90
-                  transition-opacity focus:outline-none focus:ring-2 focus:ring-primary/40
-                  sm:w-auto
-                "
-              >
-                Add to Cart
-              </button>
+              <AddToCartButton productId={product.id} />
             </div>
           </div>
         </div>

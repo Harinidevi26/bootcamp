@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import { useAuthState, signInWithGoogle, signOutUser } from "@/lib/firebase";
+import { useCart } from "@/contexts/CartContext";
 
 interface NavbarProps {
   /** Number of items currently in the cart. */
@@ -30,6 +31,9 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
 
   // Persists login across page refreshes via Firebase's onAuthStateChanged
   const { user, loading } = useAuthState();
+
+  // Live cart count + drawer trigger from CartContext
+  const { itemCount, openDrawer } = useCart();
 
   // Close the profile dropdown when the user clicks outside it
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -100,10 +104,11 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
 
         {/* ── Right: Cart + Auth + Hamburger ── */}
         <div className="flex items-center gap-1">
-          {/* Cart button — always visible */}
+          {/* Cart button — opens CartDrawer, badge shows live itemCount */}
           <button
             type="button"
-            aria-label={`Cart — ${cartItemCount} item${cartItemCount !== 1 ? "s" : ""}`}
+            onClick={openDrawer}
+            aria-label={`Cart — ${itemCount} item${itemCount !== 1 ? "s" : ""}`}
             className="
               relative flex items-center justify-center
               rounded-full p-2 text-muted
@@ -113,7 +118,7 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
             "
           >
             <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-            {cartItemCount > 0 && (
+            {itemCount > 0 && (
               <span
                 aria-hidden="true"
                 className="
@@ -123,7 +128,7 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
                   text-primary-foreground text-[10px] font-bold leading-none
                 "
               >
-                {cartItemCount > 99 ? "99+" : cartItemCount}
+                {itemCount > 99 ? "99+" : itemCount}
               </span>
             )}
           </button>
