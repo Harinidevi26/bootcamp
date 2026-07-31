@@ -1,6 +1,12 @@
 // app/api/admin/products/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+function getClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(url, key);
+}
 
 /** PATCH /api/admin/products/[id] — update a product by id */
 export async function PATCH(
@@ -31,6 +37,8 @@ export async function PATCH(
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
+  const supabase = getClient();
+
   const { data, error } = await supabase
     .from("products")
     .update(updates)
@@ -51,6 +59,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  const supabase = getClient();
 
   const { error } = await supabase.from("products").delete().eq("id", id);
 

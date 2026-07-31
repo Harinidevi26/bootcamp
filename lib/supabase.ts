@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-// lib/supabase.ts
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-=======
 /**
  * lib/supabase.ts
  *
@@ -122,4 +113,3 @@ export function createSupabaseClient(): SupabaseClient<Database> {
 
 const supabase = createSupabaseClient();
 export default supabase;
->>>>>>> d38a72f061031cd6d1671b715b62e50b9019d288

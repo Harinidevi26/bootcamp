@@ -1,9 +1,17 @@
 // app/api/admin/products/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+function getClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(url, key);
+}
 
 /** GET /api/admin/products — return all products ordered by created_at desc */
 export async function GET() {
+  const supabase = getClient();
+
   const { data, error } = await supabase
     .from("products")
     .select("*")
@@ -34,6 +42,8 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  const supabase = getClient();
 
   const { data, error } = await supabase
     .from("products")
