@@ -17,8 +17,17 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { CartItem } from "@/lib/supabase";
+
+// Untyped client used only for .update() calls where the Database generic
+// incorrectly resolves the Update type as `never` in this schema version.
+function rawClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(url, key);
+}
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -107,11 +116,13 @@ export async function POST(request: NextRequest) {
     if (selectError) throw selectError;
 
     if (existing) {
+      const existingItem = existing as { id: string; quantity: number };
       // Increment quantity on the existing row
-      const { data, error: updateError } = await supabase
+      // (uses rawClient() because the Database generic resolves Update as never)
+      const { data, error: updateError } = await rawClient()
         .from("cart_items")
-        .update({ quantity: existing.quantity + qty })
-        .eq("id", existing.id)
+        .update({ quantity: existingItem.quantity + qty })
+        .eq("id", existingItem.id)
         .select()
         .single();
 
@@ -161,7 +172,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = createSupabaseClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await rawClient()
       .from("cart_items")
       .update({ quantity: qty })
       .eq("id", id)

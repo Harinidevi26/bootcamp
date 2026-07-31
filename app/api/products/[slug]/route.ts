@@ -33,7 +33,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     throw new Error(`Supabase error: ${error.message}`);
   }
 
-  return data as Product;
+  return data as Product | null;
 }
 
 // ─── Route handler ─────────────────────────────────────────────────────────────
