@@ -1,89 +1,103 @@
-import { Palette, CheckCircle } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import ProductCard from "@/components/ProductCard";
+import Footer from "@/components/Footer";
+
+/** Shape passed to each ProductCard */
+interface Product {
+  slug: string;
+  name: string;
+  price: number;
+  image: string;
+}
+
+const FEATURED_PRODUCTS: Product[] = [
+  {
+    slug: "wireless-noise-cancelling-headphones",
+    name: "Wireless Noise-Cancelling Headphones",
+    price: 79.99,
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80",
+  },
+  {
+    slug: "minimalist-leather-watch",
+    name: "Minimalist Leather Watch",
+    price: 129.99,
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80",
+  },
+  {
+    slug: "premium-running-sneakers",
+    name: "Premium Running Sneakers",
+    price: 94.99,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80",
+  },
+  {
+    slug: "portable-bluetooth-speaker",
+    name: "Portable Bluetooth Speaker",
+    price: 49.99,
+    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&q=80",
+  },
+  {
+    slug: "smart-fitness-tracker",
+    name: "Smart Fitness Tracker",
+    price: 59.99,
+    image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=400&q=80",
+  },
+  {
+    slug: "canvas-backpack",
+    name: "Canvas Backpack",
+    price: 44.99,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80",
+  },
+  {
+    slug: "ceramic-coffee-mug",
+    name: "Ceramic Coffee Mug",
+    price: 19.99,
+    image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&q=80",
+  },
+  {
+    slug: "mechanical-keyboard",
+    name: "Mechanical Keyboard",
+    price: 109.99,
+    image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&q=80",
+  },
+];
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background px-4 py-12 md:px-8">
-      {/* ── DESIGN SYSTEM DEMO BLOCK ─────────────────────────────
-          Temporary — remove once colours & icon are confirmed.
-      ─────────────────────────────────────────────────────────── */}
-      <section
-        id="design-system-demo"
-        className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-6 shadow-sm"
-      >
-        <h1 className="mb-6 text-xl font-semibold text-foreground">
-          Design System Preview
-        </h1>
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* ── Top navigation ── */}
+      <Navbar />
 
-        {/* Color swatches */}
-        <div className="mb-6 flex flex-wrap gap-3">
-          {/* Primary */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-primary" />
-            <span className="text-sm text-muted">primary</span>
-          </div>
-          {/* Primary foreground */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="h-4 w-4 rounded-full bg-primary-foreground" />
-            </span>
-            <span className="text-sm text-muted">primary-fg</span>
-          </div>
-          {/* Secondary */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-secondary" />
-            <span className="text-sm text-muted">secondary</span>
-          </div>
-          {/* Accent */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-accent" />
-            <span className="text-sm text-muted">accent</span>
-          </div>
-          {/* Success */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-success" />
-            <span className="text-sm text-muted">success</span>
-          </div>
-          {/* Error */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-error" />
-            <span className="text-sm text-muted">error</span>
-          </div>
-          {/* Muted */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full bg-muted" />
-            <span className="text-sm text-muted">muted</span>
-          </div>
-          {/* Border */}
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-full border-2 border-border bg-surface" />
-            <span className="text-sm text-muted">border</span>
-          </div>
-        </div>
+      {/* ── Hero banner ── */}
+      <Hero />
 
-        {/* Buttons using theme classes */}
-        <div className="mb-6 flex flex-wrap gap-3">
-          <button className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-            Primary Button
-          </button>
-          <button className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:opacity-90 transition-opacity">
-            Secondary Button
-          </button>
-          <button className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:bg-background transition-colors">
-            Outline Button
-          </button>
-        </div>
+      {/* ── Featured Products ── */}
+      <main id="featured-products" className="flex-1">
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          {/* Section heading */}
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+              Featured Products
+            </h2>
+            <p className="mt-3 text-base text-muted sm:text-lg">
+              Hand-picked favourites — fresh in and flying off the shelves.
+            </p>
+          </div>
 
-        {/* Lucide icon confirmation */}
-        <div className="flex items-center gap-3 rounded-lg bg-background px-4 py-3">
-          <Palette className="text-primary" size={20} />
-          <span className="text-sm text-foreground">
-            Lucide icons are active —{" "}
-          </span>
-          <CheckCircle className="text-success" size={20} />
-          <span className="text-sm text-success font-medium">ready</span>
-        </div>
-      </section>
-      {/* ── END DEMO BLOCK ──────────────────────────────────────── */}
-    </main>
+          {/* Responsive product grid: 1 col → 2 sm → 3 md → 4 lg */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {FEATURED_PRODUCTS.map((product) => (
+              <ProductCard
+                key={product.slug}
+                {...product}
+              />
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* ── Footer ── */}
+      <Footer />
+    </div>
   );
 }

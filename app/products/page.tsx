@@ -1,4 +1,10 @@
-// app/products/page.tsx — placeholder
+import type { Metadata } from "next";
+import ProductsClient from "./ProductsClient";
+
+export const metadata: Metadata = {
+  title: "Shop All Products",
+};
+
 export default function ProductsPage() {
-  return <div>Products Page</div>;
+  return <ProductsClient />;
 }
