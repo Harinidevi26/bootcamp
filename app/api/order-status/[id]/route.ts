@@ -1,9 +1,10 @@
 // app/api/order-status/[id]/route.ts — placeholder
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  _request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  return NextResponse.json({ id: params.id, status: "pending" });
+  const { id } = await params;
+  return NextResponse.json({ id, status: "pending" });
 }
