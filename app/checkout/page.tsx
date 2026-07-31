@@ -35,6 +35,15 @@ const FIELD_LABELS: Record<keyof FormFields, string> = {
   shipping_phone: "Phone number",
 };
 
+// ─── Razorpay window type ─────────────────────────────────────────────────────
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Razorpay: new (options: Record<string, unknown>) => { open(): void };
+  }
+}
+
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 function validate(fields: FormFields): FieldErrors {
@@ -214,6 +223,27 @@ function OrderSummary() {
   );
 }
 
+// ─── Razorpay script loader ───────────────────────────────────────────────────
+
+/**
+ * Injects the Razorpay Checkout script once and resolves when ready.
+ * Safe to call multiple times — subsequent calls are no-ops.
+ */
+function loadRazorpayScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window.Razorpay !== "undefined") {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay script."));
+    document.body.appendChild(script);
+  });
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
@@ -224,7 +254,11 @@ export default function CheckoutPage() {
   const [fields, setFields] = useState<FormFields>(EMPTY_FORM);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  // True while the Razorpay script is loading / popup is opening
+  const [razorpayLoading, setRazorpayLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const isBusy = submitting || razorpayLoading;
 
   function setField(key: keyof FormFields, value: string) {
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -257,7 +291,9 @@ export default function CheckoutPage() {
       return;
     }
 
+    // ── Step 1: Create the Supabase order ────────────────────────────────────
     setSubmitting(true);
+    let orderId: string;
     try {
       const orderItems = items
         .filter((i) => i.product !== null)
@@ -284,17 +320,140 @@ export default function CheckoutPage() {
         return;
       }
 
-      const orderId = json.data?.orderId;
+      orderId = json.data?.orderId;
       if (!orderId) {
         setServerError("Order created but no ID returned. Contact support.");
         return;
       }
-
-      router.push(`/order-confirmation/${orderId}`);
     } catch {
       setServerError("Network error. Please check your connection and try again.");
+      return;
     } finally {
       setSubmitting(false);
+    }
+
+    // ── Step 2: Create the Razorpay order ────────────────────────────────────
+    setRazorpayLoading(true);
+    try {
+      const rzpRes = await fetch("/api/create-razorpay-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId }),
+      });
+
+      const rzpJson = await rzpRes.json();
+
+      if (!rzpRes.ok) {
+        setServerError(
+          rzpJson.error ?? "Failed to initialise payment. Please try again."
+        );
+        setRazorpayLoading(false);
+        return;
+      }
+
+      const { razorpay_order_id, amount } = rzpJson as {
+        razorpay_order_id: string;
+        amount: number;
+      };
+
+      // ── Step 3: Load Razorpay script and open the popup ─────────────────────
+      await loadRazorpayScript();
+
+      const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      if (!keyId) {
+        setServerError("Payment configuration error. Contact support.");
+        setRazorpayLoading(false);
+        return;
+      }
+
+      await new Promise<void>((resolvePopup) => {
+        const options: Record<string, unknown> = {
+          // ── Razorpay credentials ────────────────────────────────────────────
+          key: keyId,
+          order_id: razorpay_order_id,
+          amount,
+          currency: "INR",
+
+          // ── Branding ────────────────────────────────────────────────────────
+          name: "MyStore",
+          description: "Order payment",
+          // logo shown inside the Razorpay modal (optional — use full URL in prod)
+          image: `${window.location.origin}/favicon.ico`,
+
+          // ── Pre-fill customer details from the shipping form ─────────────────
+          prefill: {
+            name: fields.shipping_name,
+            email: user.email ?? "",
+            contact: fields.shipping_phone,
+          },
+
+          // ── Theme ────────────────────────────────────────────────────────────
+          theme: {
+            color: "#6366f1", // --color-primary
+          },
+
+          // ── Callbacks ────────────────────────────────────────────────────────
+          handler: async (response: {
+            razorpay_order_id: string;
+            razorpay_payment_id: string;
+            razorpay_signature: string;
+          }) => {
+            // Step 4: Verify the payment server-side
+            try {
+              const verifyRes = await fetch("/api/verify-razorpay-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+
+              const verifyJson = await verifyRes.json();
+
+              if (!verifyRes.ok || !verifyJson.success) {
+                setServerError(
+                  verifyJson.error ??
+                    "Payment could not be verified. Please contact support."
+                );
+                resolvePopup();
+                setRazorpayLoading(false);
+                return;
+              }
+
+              // Step 5: Redirect to order confirmation
+              router.push(`/order-confirmation/${orderId}`);
+            } catch {
+              setServerError(
+                "Verification network error. Your payment may have succeeded — check your email or contact support."
+              );
+            } finally {
+              resolvePopup();
+              setRazorpayLoading(false);
+            }
+          },
+
+          modal: {
+            ondismiss: () => {
+              // User closed the popup without paying
+              setRazorpayLoading(false);
+              resolvePopup();
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+        // razorpayLoading stays true until handler or ondismiss fires
+      });
+    } catch (err) {
+      setServerError(
+        err instanceof Error
+          ? err.message
+          : "Payment initialisation failed. Please try again."
+      );
+      setRazorpayLoading(false);
     }
   }
 
@@ -342,6 +501,31 @@ export default function CheckoutPage() {
           </div>
         </div>
       </header>
+
+      {/* Razorpay loading overlay */}
+      {razorpayLoading && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="
+            fixed inset-0 z-50 flex flex-col items-center justify-center gap-4
+            bg-background/80 backdrop-blur-sm
+          "
+        >
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-10 py-8 shadow-xl">
+            <Loader2
+              className="h-10 w-10 animate-spin text-primary"
+              aria-hidden="true"
+            />
+            <p className="text-sm font-medium text-foreground">
+              Opening secure payment…
+            </p>
+            <p className="text-xs text-muted">
+              Do not close or refresh this page.
+            </p>
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_400px] lg:gap-16">
@@ -420,7 +604,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 form="checkout-form"
-                disabled={submitting || items.length === 0}
+                disabled={isBusy || items.length === 0}
                 className="
                   mt-2 flex w-full items-center justify-center gap-2 rounded-xl
                   bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground
@@ -428,16 +612,21 @@ export default function CheckoutPage() {
                   focus:ring-2 focus:ring-primary/40
                   disabled:cursor-not-allowed disabled:opacity-50
                 "
-                aria-busy={submitting}
+                aria-busy={isBusy}
               >
                 {submitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     Placing order…
                   </>
+                ) : razorpayLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    Opening payment…
+                  </>
                 ) : (
                   <>
-                    Place order · ${(subtotal * 1.1).toFixed(2)}
+                    Pay · ${(subtotal * 1.1).toFixed(2)}
                   </>
                 )}
               </button>
