@@ -10,9 +10,11 @@ import {
   LogIn,
   LogOut,
   User,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuthState, signInWithGoogle, signOutUser } from "@/lib/firebase";
 import { useCart } from "@/contexts/CartContext";
+import { isAdmin } from "@/lib/isAdmin";
 
 interface NavbarProps {
   /** Number of items currently in the cart. */
@@ -31,6 +33,9 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
 
   // Persists login across page refreshes via Firebase's onAuthStateChanged
   const { user, loading } = useAuthState();
+
+  // Derive admin status — re-evaluated any time auth state changes
+  const isAdminUser = isAdmin(user?.email);
 
   // Live cart count + drawer trigger from CartContext
   const { itemCount, openDrawer } = useCart();
@@ -100,6 +105,28 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
               </a>
             </li>
           ))}
+
+          {/* Admin link — only for recognised admin emails */}
+          {!loading && isAdminUser && (
+            <li>
+              <a
+                href="/admin"
+                id="admin-nav-link"
+                className="
+                  flex items-center gap-1.5
+                  relative text-sm font-medium text-primary
+                  hover:text-foreground transition-colors
+                  after:absolute after:left-0 after:-bottom-0.5
+                  after:h-[2px] after:w-0 after:rounded-full after:bg-primary
+                  after:transition-[width] after:duration-200
+                  hover:after:w-full
+                "
+              >
+                <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                Admin
+              </a>
+            </li>
+          )}
         </ul>
 
         {/* ── Right: Cart + Auth + Hamburger ── */}
@@ -279,6 +306,26 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
                 </a>
               </li>
             ))}
+
+            {/* Mobile Admin link — only for recognised admin emails */}
+            {!loading && isAdminUser && (
+              <li>
+                <a
+                  href="/admin"
+                  id="admin-mobile-nav-link"
+                  onClick={() => setMenuOpen(false)}
+                  className="
+                    flex items-center gap-2.5 rounded-lg
+                    px-3 py-2.5 text-sm font-medium text-primary
+                    hover:bg-primary/10
+                    transition-colors
+                  "
+                >
+                  <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Admin
+                </a>
+              </li>
+            )}
 
             {/* Mobile sign-in row */}
             {!loading && (
