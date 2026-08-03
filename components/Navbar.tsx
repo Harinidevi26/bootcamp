@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
@@ -22,8 +23,8 @@ interface NavbarProps {
 }
 
 const NAV_LINKS = [
-  { label: "Home", href: "#" },
-  { label: "Products", href: "#" },
+  { label: "Home", href: "/" },
+  { label: "Products", href: "/products" },
 ] as const;
 
 export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
@@ -75,8 +76,8 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
         aria-label="Main navigation"
       >
         {/* ── Left: Store logo + name ── */}
-        <a
-          href="#"
+        <Link
+          href="/"
           className="flex shrink-0 items-center gap-2 text-primary font-semibold hover:opacity-80 transition-opacity"
           aria-label="MyStore — go to home"
         >
@@ -84,13 +85,13 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
           <span className="text-lg tracking-tight text-foreground">
             My<span className="text-primary">Store</span>
           </span>
-        </a>
+        </Link>
 
         {/* ── Center: Desktop nav links ── */}
         <ul className="hidden md:flex items-center gap-8" role="list">
           {NAV_LINKS.map(({ label, href }) => (
             <li key={label}>
-              <a
+              <Link
                 href={href}
                 className="
                   relative text-sm font-medium text-muted
@@ -102,7 +103,7 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
                 "
               >
                 {label}
-              </a>
+              </Link>
             </li>
           ))}
 
@@ -292,7 +293,7 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
           <ul className="flex flex-col px-4 py-2 gap-0.5" role="list">
             {NAV_LINKS.map(({ label, href }) => (
               <li key={label}>
-                <a
+                <Link
                   href={href}
                   onClick={() => setMenuOpen(false)}
                   className="
@@ -303,14 +304,14 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
                   "
                 >
                   {label}
-                </a>
+                </Link>
               </li>
             ))}
 
             {/* Mobile Admin link — only for recognised admin emails */}
             {!loading && isAdminUser && (
               <li>
-                <a
+                <Link
                   href="/admin"
                   id="admin-mobile-nav-link"
                   onClick={() => setMenuOpen(false)}
@@ -323,7 +324,7 @@ export default function Navbar({ cartItemCount = 0 }: NavbarProps) {
                 >
                   <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden="true" />
                   Admin
-                </a>
+                </Link>
               </li>
             )}
 

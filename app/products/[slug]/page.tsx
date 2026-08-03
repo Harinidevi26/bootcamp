@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import AddToCartButton from "@/components/AddToCartButton";
 
 interface Product {
@@ -77,7 +78,8 @@ export default async function ProductDetailPage({
           href="/products"
           className="mb-8 inline-flex items-center text-sm font-medium text-primary hover:underline"
         >
-          &larr; Back to all products
+          <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden="true" />
+          Back to all products
         </Link>
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-2">
           {/* Product Image */}
