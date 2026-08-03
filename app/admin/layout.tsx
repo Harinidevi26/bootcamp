@@ -12,7 +12,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Store } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Store, ArrowLeft } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin",          Icon: LayoutDashboard },
@@ -84,9 +84,10 @@ export default function AdminLayout({
           {/* Back to store — trailing edge */}
           <Link
             href="/"
-            className="ml-auto text-xs text-muted hover:text-primary transition-colors"
+            className="ml-auto inline-flex items-center gap-1 text-xs text-muted hover:text-primary transition-colors"
           >
-            &larr; Back to store
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            Back to store
           </Link>
         </nav>
       </header>

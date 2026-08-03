@@ -433,7 +433,12 @@ export default function CheckoutPage() {
               email: customerEmail,
               contact: fields.shipping_phone,
             },
-            theme: { color: "#6366f1" }, // --color-primary
+            theme: {
+              color:
+                getComputedStyle(document.documentElement)
+                  .getPropertyValue("--color-primary")
+                  .trim() || "#6366f1",
+            },
 
             handler: async (response: {
               razorpay_order_id: string;
