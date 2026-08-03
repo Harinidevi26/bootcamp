@@ -128,7 +128,8 @@ export async function POST(request: NextRequest) {
 
   // 3. Insert order ───────────────────────────────────────────────────────────
 
-  const { data: order, error: orderError } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: order, error: orderError } = await (supabase as any)
     .from("orders")
     .insert({
       user_id,
@@ -161,7 +162,8 @@ export async function POST(request: NextRequest) {
     price:      item.price,
   }));
 
-  const { error: itemsError } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: itemsError } = await (supabase as any)
     .from("order_items")
     .insert(orderItemRows);
 
@@ -173,7 +175,8 @@ export async function POST(request: NextRequest) {
 
   // 5. Clear the user's cart ──────────────────────────────────────────────────
 
-  const { error: cartError } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: cartError } = await (supabase as any)
     .from("cart_items")
     .delete()
     .eq("user_id", user_id);

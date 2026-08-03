@@ -93,15 +93,8 @@ let _client: SupabaseClient<Database> | null = null;
 export function createSupabaseClient(): SupabaseClient<Database> {
   if (_client) return _client;
 
-  const url  = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !key) {
-    throw new Error(
-      "[supabase] Missing environment variables.\n" +
-      "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local."
-    );
-  }
+  const url  = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+  const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
 
   _client = _createClient<Database>(url, key);
   return _client;

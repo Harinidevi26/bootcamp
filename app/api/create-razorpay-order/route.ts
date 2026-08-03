@@ -59,19 +59,20 @@ export async function POST(request: NextRequest) {
 
     // ── 4. Persist the Razorpay order id onto our Supabase order row ─────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (supabaseServer as any)
+    const { data: updatedRows, error: updateError } = await (supabaseServer as any)
       .from("orders")
       .update({ razorpay_order_id: razorpayOrder.id })
-      .eq("id", order_id);
+      .eq("id", order_id)
+      .select("id");
 
-    if (updateError) {
+    if (updateError || !updatedRows || updatedRows.length === 0) {
       console.error(
         "[create-razorpay-order] Failed to save razorpay_order_id:",
-        updateError
+        updateError ?? "No order row updated."
       );
-      // Razorpay order already exists — surface error so the client can retry.
+      // Razorpay order creation DB save failed — surface error so the client can retry.
       return Response.json(
-        { error: "Failed to save Razorpay order id." },
+        { error: "Failed to save Razorpay order id to database." },
         { status: 500 }
       );
     }

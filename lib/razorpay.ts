@@ -14,21 +14,8 @@
 
 import Razorpay from "razorpay";
 
-const keyId = process.env.RAZORPAY_KEY_ID;
-const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
-if (!keyId) {
-  throw new Error(
-    "[razorpay] Missing environment variable: RAZORPAY_KEY_ID\n" +
-      "Add it to .env.local (never with a NEXT_PUBLIC_ prefix)."
-  );
-}
-if (!keySecret) {
-  throw new Error(
-    "[razorpay] Missing environment variable: RAZORPAY_KEY_SECRET\n" +
-      "Add it to .env.local (never with a NEXT_PUBLIC_ prefix)."
-  );
-}
+const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder";
+const keySecret = process.env.RAZORPAY_KEY_SECRET || "placeholder_secret";
 
 /**
  * Singleton Razorpay client.

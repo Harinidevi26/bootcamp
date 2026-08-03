@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert a new row
-    const { data, error: insertError } = await supabase
+    const { data, error: insertError } = await rawClient()
       .from("cart_items")
       .insert({ user_id, product_id, quantity: qty })
       .select()
